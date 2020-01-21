@@ -17,7 +17,9 @@ rgb_model = Inception_Inflated3d(
                 classes=NUM_CLASSES)
 
 intermediate_layer_model = Model(inputs=rgb_model.layers[0].input, outputs=rgb_model.layers[196].output)
+
 activations = model.predict(subsampled_video) #this video has the following dimensions (1, 79, 224, 224, 3)
+
 activations = np.reshape(activations, (16,225))
 
 #------------------------------------------------------------------------------------------------------------#
