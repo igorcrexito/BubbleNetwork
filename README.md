@@ -8,7 +8,14 @@ In order to properly use our trained models, the appearance input must be extrac
 
 #------------------------------------------------------------------------------------------------------------#
 
-layer_name = 'Conv3d_6a_1x1'
+from i3d_inception import Inception_Inflated3d
+
+rgb_model = Inception_Inflated3d(
+                include_top=True,
+                weights='rgb_kinetics_only',
+                input_shape=(NUM_FRAMES, FRAME_HEIGHT, FRAME_WIDTH, NUM_RGB_CHANNELS),
+                classes=NUM_CLASSES)
+
 intermediate_layer_model = Model(inputs=rgb_model.layers[0].input, outputs=rgb_model.layers[196].output)
 activations = model.predict(subsampled_video) #this video has the following dimensions (1, 79, 224, 224, 3)
 activations = np.reshape(activations, (16,225))
