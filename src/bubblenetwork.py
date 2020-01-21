@@ -13,96 +13,47 @@ from matplotlib import cm
 import pandas as pd
 import utils.filereader as fr
 import utils.utils as utils
+from sklearn.metrics import classification_report, confusion_matrix
+from keras.optimizers import Adam, RMSprop
+import matplotlib.pyplot as plt
+from keras.models import Model
 
 batch_size = 20
-clip_size = 4
-number_of_timesteps = 4
-appearance_representation_size = 4096 #size of activations of FC7 from VGG16
-number_of_classes = 51 #51 classes from HMDB51
-base_path = "D:/HMDB51/videos/" #absolute paths to test the application
-protocol_path = "D:/HMDB51/splits/"
-number_of_epochs = 50
-split = 1 #this represents the split to be evaluated on the protocol file
+appearance_representation_size = 225 #size of activations of i3D network
+number_of_classes = 20 #number of dataset classes
+number_of_frames = 16
+load_mode = 1 #set this value to 1 to load a pre-trained model
 
-#just a main method to check model architecture
-if __name__ == "__mains__":
-    #bubble_model = bm.create_bubble_model2(batch_size, number_of_timesteps, clip_size, appearance_representation_size, number_of_classes)
-    bubble_model = bm.create_bubble_network(batch_size, 32, number_of_classes)
-   
+
 if __name__ == "__main__":
   
-   #generating data list to train/validate/test the model
-   input_appearance_list_train = []
-   input_flow_list_train = []
-   output_label_list_train = []
+   #you can create a model from scratch or load a trained model
+   if load_mode == 0:
+        bubble_model = bm.create_bubble_network(batch_size, number_of_frames, appearance_representation_size, new_classes) #creating a model
+   else:
+        bubble_model = utils.load_weights()
+        bubble_model.compile(optimizer=Adam(lr=0.0015, beta_1=0.9, beta_2=0.999), loss='categorical_crossentropy') #use this line if u need to compile the model
    
-   input_appearance_list_test = []
-   input_flow_list_test = []
-   output_label_list_test = []
+   #fitting model -> parameters are (the created model, the flow input ())
+   bubble_model = bm.bubble_network_fit(bubble_model, input_flow_list_train, input_appearance_list_train, number_of_frames, output_label_list_train, number_of_epochs, batch_size, number_of_classes)
    
-   #retrieving all directories of the dataset
-   os.chdir(base_path)
-   
-   #retrieving the list of activities
-   list_of_activities = glob.glob("*")
-   
-   #temporary number of classes to analyze partial outcomes
-   new_classes = 6
-   
-   #for i in range(0, number_of_classes):
-   for i in range(0, new_classes):
-        #composing path to get videos
-        video_path = base_path + str(list_of_activities[i]) + "/"
-        print(video_path)
-        
-        #reading protocol file to place videos on test or train
-        protocol_list = fr.read_protocol_path(protocol_path, split, str(list_of_activities[i]))
-        
-        #reading optical flow videos and appearance activations
-        flow_list_train, flow_list_test = fr.read_flow_videos(video_path, clip_size, number_of_timesteps, protocol_list)
-        appearance_list_train, appearance_list_test = fr.read_appearance_files(video_path, clip_size, number_of_timesteps, protocol_list)
-        
-        #print(np.shape(appearance_list_train))
-        #appending data to lists
-        input_appearance_list_train.extend(appearance_list_train)
-        input_appearance_list_test.extend(appearance_list_test)
-        input_flow_list_train.extend(flow_list_train)
-        input_flow_list_test.extend(flow_list_test)
-        
-        #appending labels to output lists
-        for z in range(0, len(flow_list_train)):
-            output_label_list_train.append(i)
-            
-        for z in range(0, len(flow_list_test)):
-            output_label_list_test.append(i)
-        
-   #showing data dimensions
-   print("Data dimensions ------------------------------------------")
-   print(str(np.shape(input_appearance_list_train)) + " " + str(np.shape(input_appearance_list_test)))
-   print(str(np.shape(input_flow_list_train)) + " " + str(np.shape(input_flow_list_test)))
-   print(str(np.shape(output_label_list_train)) + " " + str(np.shape(output_label_list_test)))
-   print("----------------------------------------------------------")
-   
-   #bubble_model = bm.create_bubble_model2(batch_size, number_of_timesteps, clip_size, appearance_representation_size, number_of_classes)
-   
-   bubble_model = bm.create_bubble_network(batch_size, 16, new_classes) #creating a model
-   output_label_list_train = keras.utils.to_categorical(output_label_list_train, num_classes=new_classes) #turning output labels into categorical values
+   #saving model weights
+   #utils.save_weights(bubble_model)
 
-   #fitting model
-   #bubble_model = bm.bubble_fit(bubble_model, input_flow_list_train, input_appearance_list_train, number_of_timesteps, clip_size, output_label_list_train, number_of_epochs, batch_size)
-   bubble_model = bm.bubble_network_fit(bubble_model, input_flow_list_train, input_appearance_list_train, number_of_timesteps*clip_size, output_label_list_train, number_of_epochs, batch_size, new_classes)
-   
-   input_flow_list_test = np.array([input_flow_list_test])
-   input_appearance_list_test = np.array([input_appearance_list_test])
-   input_appearance_list_train = np.array([input_appearance_list_train])
+   input_flow_list_test = np.array([input_flow_list_test], dtype=np.float32)
+   input_appearance_list_test = np.array([input_appearance_list_test], dtype=np.float32)
+   input_appearance_list_train = np.array([input_appearance_list_train], dtype=np.float32)
    input_flow_list_train = np.array([input_flow_list_train])
    input_flow_list_train = input_flow_list_train[0]
    input_appearance_list_train = input_appearance_list_train[0]
    
    samples = np.shape(input_flow_list_test)[1]
+   
    input_flow_list_test = np.reshape(input_flow_list_test, (samples, number_of_timesteps* clip_size, 112, 112, 3))
-   input_appearance_list_test = np.reshape(input_appearance_list_test, (samples, 16, 4096))
+   input_appearance_list_test = np.reshape(input_appearance_list_test, (samples, number_of_frames, appearance_representation_size))
+   
    predictions = bubble_model.predict([input_appearance_list_test, input_flow_list_test], batch_size)
+   #predictions = bubble_model.predict([input_appearance_list_train, input_flow_list_train], batch_size)
    
    #output_label_list_test = utils.uncategorize_array(output_label_list_test)
    predictions = utils.uncategorize_array(predictions)
@@ -111,9 +62,16 @@ if __name__ == "__main__":
    
    for i in range(0, len(predictions)):
        print(str(i) + ' ' + str(predictions[i]) + " " + str(output_label_list_test[i]))
+       #if (predictions[i] == output_label_list_train[i]):
        if (predictions[i] == output_label_list_test[i]):
            accuracy+=1
            
    accuracy = accuracy/len(predictions)
    print("Final accuracy of the model is: " + str(accuracy))
+    
+   print('Confusion Matrix')
+   print(confusion_matrix(output_label_list_test, predictions))
+   utils.plot_confusion_matrix(output_label_list_test, predictions, normalize=True,
+                      title='Confusion matrix, without normalization')
    
+   plt.show()
