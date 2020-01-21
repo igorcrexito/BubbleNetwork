@@ -4,7 +4,7 @@ This repository contains the files to assemble the BubbleNET architecture associ
 
 On bubblenetwork.py, you can find details on how to use a trained model (available on folder models) or train a bubble architecture from scratch. On models.py, you can find the implementation of the bubble architecture.
 
-In order to properly use our trained models, the appearance input must be extracted with I3D RGB Network [1], available on models/i3dnetwork. This model uses a 79-frame video as input. So, perform subsample (if needed), extract these features from convolutional layer Convolutional layer 6a; and reshape to (16,225), as shown on the snippet below:
+In order to properly use our trained models, the appearance input must be extracted with I3D RGB Network [1], downloadable by the script below. This model uses a 79-frame video as input. So, perform subsample (if needed), extract these features from convolutional layer Convolutional layer 6a; and reshape to (16,225), as shown on the script below:
 
 #------------------------------------------------------------------------------------------------------------#
 
