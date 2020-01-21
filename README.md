@@ -7,10 +7,12 @@ On bubblenetwork.py, you can find details on how to use a trained model (availab
 In order to properly use our trained models, the appearance input must be extracted with I3D RGB Network [1], available on models/i3dnetwork. This model uses a 79-frame video as input. So, perform subsample (if needed), extract these features from convolutional layer Convolutional layer 6a; and reshape to (16,225), as shown on the snippet below:
 
 #------------------------------------------------------------------------------------------------------------#
+
 layer_name = 'Conv3d_6a_1x1'
 intermediate_layer_model = Model(inputs=rgb_model.layers[0].input, outputs=rgb_model.layers[196].output)
 activations = model.predict(subsampled_video) #this video has the following dimensions (1, 79, 224, 224, 3)
 activations = np.reshape(activations, (16,225))
+
 #------------------------------------------------------------------------------------------------------------#
 
 
