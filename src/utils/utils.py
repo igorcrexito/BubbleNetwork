@@ -2,24 +2,15 @@ import numpy as np
 from keras.models import model_from_json
 from keras import backend as K
 import operator
+import matplotlib.pyplot as plt
 
-def uncategorize_array(array):
-    array_lenght = len(array) #gathering the array lenght
-    new_array = np.zeros((array_lenght,1))
+def load_weights(path_to_model):
+    json_file = open(path_to_model + "/yup_model_stationary.json", 'r') #loading YUP stationary model, for example
+    loaded_model_json = json_file.read()
+    json_file.close()
+    loaded_model = model_from_json(loaded_model_json)
     
-    for i in range (0, array_lenght):
-        max_index = get_max_index(array[i])
-        new_array[i] = max_index
-        
-    return new_array
-
-def get_max_index(array):
-    max_value = 0
-    max_index = 0
-    
-    for i in range(0, len(array)):
-        if array[i]>max_value:
-            max_value = array[i]
-            max_index = i
-    
-    return max_index
+    # load weights into new model
+    loaded_model.load_weights(path_to_model+ "/yup_model_stationary.h5")
+ 
+    return loaded_model
