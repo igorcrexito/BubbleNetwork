@@ -24,7 +24,7 @@ activations = np.reshape(activations, (16,225))
 
 #------------------------------------------------------------------------------------------------------------#
 
-On alternative_models.py, the source code from architectures mentioned in Table 3 of the paper ("BUBBLENET: A DISPERSE RECURRENT STRUCTURE TO RECOGNIZE ACTIVITIES") can be found.
+On models/alternative_models.py, the source code from architectures mentioned in Table 3 of the paper ("BUBBLENET: A DISPERSE RECURRENT STRUCTURE TO RECOGNIZE ACTIVITIES") can be found.
 
 
 REFERENCES:
