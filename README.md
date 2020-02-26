@@ -28,6 +28,7 @@ On alternative_models.py, the source code from architectures mentioned in Table 
 
 
 REFERENCES:
+
 [1] J. Carreira and A. Zisserman, “Quo vadis, action recognition? a new model and the kinetics dataset,” in IEEE CVPR, 07 2017, pp. 4724–4733.
 
 
